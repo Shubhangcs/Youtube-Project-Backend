@@ -53,6 +53,13 @@ export class UsersRepository {
                 full_name: data.full_name,
                 email: data.email,
                 phone: data.phone,
+            },
+            omit: {
+                password: true,
+                channels: true,
+                channel_count: true,
+                created_at: true,
+                profile_image: true,
             }
         });
     }
@@ -61,6 +68,9 @@ export class UsersRepository {
         return await prisma.users.delete({
             where: {
                 id: id,
+            },
+            select: {
+                id: true,
             }
         });
     }
@@ -72,6 +82,9 @@ export class UsersRepository {
             },
             data: {
                 profile_image: data.profile_image_url,
+            },
+            select: {
+                profile_image: true,
             }
         });
     }
@@ -84,6 +97,9 @@ export class UsersRepository {
             data: {
                 profile_image: null,
             },
+            select: {
+                profile_image: true,
+            }
         });
     }
 }

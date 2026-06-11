@@ -2,10 +2,12 @@ import jwt from "jsonwebtoken";
 import { AppError } from "../../utils/errors/error";
 import { UsersService } from "./users.service";
 import type {
+    NextFunction,
     Request,
     Response,
 } from "express";
 import { env } from "../../config/env";
+import { errorResponse, successResponse } from "../../utils/responses/responses";
 
 export class UsersController {
     constructor(
@@ -18,19 +20,12 @@ export class UsersController {
     ) => {
         try {
             const response = await this.usersService.createUser(req.body);
-            return res.status(201).json({
-                message: "success",
-                result: response,
-            });
+            return successResponse(res, 201, response);
         } catch (error) {
             if (error instanceof AppError) {
-                return res.status(400).json({
-                    message: error.message,
-                });
+                return errorResponse(res, error.message, error.status);
             }
-            return res.status(500).json({
-                message: "internal server error",
-            });
+            return errorResponse(res);
         }
     }
 
@@ -43,20 +38,100 @@ export class UsersController {
             const token = jwt.sign({
                 id: id
             }, env.JWT_SECRET, { expiresIn: "1d" });
-            return res.status(200).json({
-                message: "success",
-                token: token,
+            res.cookie("token", token, {
+                httpOnly: true,
+                secure: env.ENV === "production",
+                sameSite: "lax",
+                maxAge: 24 * 60 * 60 * 1000,
             });
+            return successResponse(res, 200);
         } catch (error) {
             if (error instanceof AppError) {
-                return res.status(400).json({
-                    message: error.message,
-                });
+                return errorResponse(res, error.message, error.status);
             }
             console.log(error);
-            return res.status(500).json({
-                message: "internal server error",
-            });
+            return errorResponse(res);
+        }
+    }
+
+    getUserDetails = async (
+        req: Request,
+        res: Response,
+    ) => {
+        try {
+            const userDetails = await this.usersService.getUserDetails(req.id as string);
+            return successResponse(res, 200, { user: userDetails });
+        } catch (error) {
+            if (error instanceof AppError) {
+                return errorResponse(res, error.message, error.status);
+            }
+            console.log(error);
+            return errorResponse(res);
+        }
+    }
+
+    updateUser = async (
+        req: Request,
+        res: Response,
+    ) => {
+        try {
+            const userDetails = await this.usersService.updateUser(req.body, req.id as string);
+            return successResponse(res, 200, { user: userDetails });
+        } catch (error) {
+            if (error instanceof AppError) {
+                return errorResponse(res, error.message, error.status);
+            }
+            console.log(error);
+            return errorResponse(res);
+        }
+    }
+
+    deleteUser = async (
+        req: Request,
+        res: Response,
+    ) => {
+        try {
+            const userDetails = await this.usersService.deleteUser(req.id as string);
+            return successResponse(res, 200, userDetails);
+        } catch (error) {
+            if (error instanceof AppError) {
+                return errorResponse(res, error.message, error.status);
+            }
+            console.log(error);
+            return errorResponse(res);
+        }
+    }
+
+    updateProfileImage = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        try {
+            const url = await this.usersService.updateProfileImage(req.id as string);
+            return successResponse(res, 200, { url: url });
+        } catch (error) {
+            if (error instanceof AppError) {
+                return errorResponse(res, error.message, error.status);
+            }
+            console.log(error);
+            return errorResponse(res);
+        }
+    }
+
+    deleteProfileImage = async (
+        req: Request,
+        res: Response,
+    ) => {
+        try {
+            const profileImage = await this.usersService.deleteProfileImage(req.id as string);
+            return successResponse(res, 200, profileImage);
+        } catch (error) {
+            if (error instanceof AppError) {
+                return errorResponse(res, error.message, error.status);
+            }
+            console.log(error);
+            return errorResponse(res);
         }
     }
 }
