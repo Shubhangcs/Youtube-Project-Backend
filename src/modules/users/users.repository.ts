@@ -15,6 +15,7 @@ export class UsersRepository {
     }
 
     async getById(id: string) {
+        console.log(id);
         return await prisma.users.findFirst({
             where: {
                 id: id,
@@ -25,11 +26,13 @@ export class UsersRepository {
                 full_name: true,
                 email: true,
                 phone: true,
+                channel_count: true,
                 created_at: true,
                 channels: true,
             }
         });
     }
+    
     async create(data: CreateUserSchema, hashedPassword: string) {
         return await prisma.users.create({
             data: {

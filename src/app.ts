@@ -4,10 +4,14 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { rateLimit } from "express-rate-limit";
 import compression from "compression";
-import { jsonValidator, requestValidator } from "./middleware/validator";
+import { jsonValidator } from "./middleware/validator";
 
 
 const app = express();
+
+(BigInt.prototype as any).toJSON = function () {
+    return this.toString();
+};
 
 app.use(express.json());
 app.use(jsonValidator);
